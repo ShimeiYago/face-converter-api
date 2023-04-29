@@ -6,8 +6,6 @@ services:
       - ./app:/code
     ports:
       - "8000:8000"
-    depends_on:
-      - db
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.develop
     tty: true
