@@ -1,0 +1,38 @@
+version: '3'
+services:
+  app:
+    build: .
+    volumes:
+      - ./app:/code
+    expose:
+        - '8000'
+    depends_on:
+      - db
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+    command: bash -c "python3 manage.py migrate &&
+      python3 manage.py collectstatic --clear --noinput &&
+      uwsgi --http :8000 --module config.wsgi --processes ${PROCESSES} --master --enable-threads"
+    restart: always
+  server:
+    image: steveltn/https-portal:1
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+          - app
+    environment:
+      DOMAINS: '${DOMAIN} -> http://app:8000'
+      STAGE: ${HTTPS_PORTAL_STAGE} # 'local' / 'staging' / 'production'
+      ERROR_LOG: /var/log/error.log
+      ACCESS_LOG: /var/log/access.log
+      CLIENT_MAX_BODY_SIZE: 2M
+    volumes:
+      - https-portal-data:/var/lib/https-portal # connect to volume
+      - ./server/nginx-conf/default.conf.erb:/var/lib/nginx-conf/default.conf.erb:ro
+      - ./server/nginx-conf/default.ssl.conf.erb:/var/lib/nginx-conf/default.ssl.conf.erb:ro
+      - ./server/log:/var/log/
+      - ./app/static:/static
+    restart: always
+volumes:
+  https-portal-data:
