@@ -8,7 +8,7 @@ from .base64_pil_converter import pil_to_base64, base64_to_pil
 TF_IMAGE_SIZE = 256
 
 
-def convert_image(base64data: str, convert_direction: str, percent_crop):
+def convert_image(base64data: str, model: str, convert_direction: str, percent_crop):
     # 画像を読み込んでリサイズ
     img = base64_to_pil(base64data)
 
@@ -31,7 +31,7 @@ def convert_image(base64data: str, convert_direction: str, percent_crop):
     G_B2A = module.ResnetGenerator(input_shape=(TF_IMAGE_SIZE, TF_IMAGE_SIZE, 3))
 
     # resotre
-    tl.Checkpoint(dict(G_A2B=G_A2B, G_B2A=G_B2A), 'constants/checkpoints').restore()
+    tl.Checkpoint(dict(G_A2B=G_A2B, G_B2A=G_B2A), f'constants/checkpoints/{model}').restore()
 
     # prepare image
     A = cropped_image_array.reshape([1, TF_IMAGE_SIZE, TF_IMAGE_SIZE, 3])
@@ -57,8 +57,6 @@ def convert_image(base64data: str, convert_direction: str, percent_crop):
     mask_im = mask_im.filter(ImageFilter.GaussianBlur(5))
     orig_image.paste(converted_image, (v0, h0), mask_im)
     ###
-
-    orig_image.save('output.jpg')
 
     return [
         pil_to_base64(orig_image, format="jpeg"),

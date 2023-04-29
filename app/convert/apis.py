@@ -18,6 +18,7 @@ class ConvertView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         [wholeImgBase64data, croppedImgBase64data] = convert_image(
             request.data["base64data"],
+            request.data["model"],
             request.data["convertDirection"],
             request.data["crop"],
         )

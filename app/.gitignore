@@ -4,7 +4,6 @@
 
 uploads/
 static/
-constants/checkpoints
 
 ### Django ###
 *.log
